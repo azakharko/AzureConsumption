@@ -46,7 +46,7 @@ namespace AzCost
         {
             var consumption = new List<AzureResourceConsumption>();
 
-            var uri = $"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Consumption/usagedetails?$filter=properties/resourceGroup eq '{rgName}'&api-version=2021-10-01";
+            var uri = $"subscriptions/{subscriptionId}/providers/Microsoft.Consumption/usagedetails?$filter=properties/resourceGroup eq '{rgName}'&api-version=2021-10-01";
 
             do
             {
