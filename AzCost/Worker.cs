@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AzCost.Models;
+using AzCost.Repositories;
 using Microsoft.Extensions.Configuration;
 
 namespace AzCost
@@ -18,10 +19,12 @@ namespace AzCost
         };
 
         private readonly IConfiguration _configuration;
+        private readonly IRepository _repository;
 
-        public Worker(IConfiguration configuration)
+        public Worker(IConfiguration configuration, IRepository repository)
         {
             _configuration = configuration;
+            _repository = repository;
         }
 
         public async Task GetResourceInfoAsync()
@@ -38,6 +41,8 @@ namespace AzCost
                     rgInfo.Consumption = await GetResourceConsumptionAsync(subscription.Id, rgName);
 
                     PrintResources(rgInfo);
+
+                    await _repository.SaveRgInfoAsync(rgInfo);
                 }
             }
         }
@@ -90,17 +95,13 @@ namespace AzCost
                 }
 
                 Console.WriteLine();
+
             }
         }
 
         private async Task<ResourceGroupInfo> GetResourcesAsync(string subscriptionId, string rgName)
         {
-            var rgInfo = new ResourceGroupInfo
-            {
-                Resources = new List<AzureResource>(),
-                RgName = rgName,
-                SubscriptionId = subscriptionId
-            };
+            var rgInfo = new ResourceGroupInfo(rgName, subscriptionId);
 
             var uri = $"subscriptions/{subscriptionId}/resourceGroups/{rgName}/resources?$expand=createdTime,changedTime&api-version=2021-04-01";
 
