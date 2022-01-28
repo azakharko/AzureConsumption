@@ -31,19 +31,28 @@ namespace AzCost
         {
             var subscriptions = _configuration.GetSection("Subscriptions").Get<IEnumerable<SettingsSubscription>>();
 
-            foreach (var subscription in subscriptions)
+            try
             {
-                await SetAuthTokenForTenantAsync(subscription.TenantId);
-
-                foreach (var rgName in subscription.ResourceGroups)
+                foreach (var subscription in subscriptions)
                 {
-                    var rgInfo = await GetResourcesAsync(subscription.Id, rgName);
-                    rgInfo.Consumption = await GetResourceConsumptionAsync(subscription.Id, rgName);
+                    await SetAuthTokenForTenantAsync(subscription.TenantId);
 
-                    PrintResources(rgInfo);
+                    foreach (var rgName in subscription.ResourceGroups)
+                    {
+                        var rgInfo = await GetResourcesAsync(subscription.Id, rgName);
+                        rgInfo.Consumption = await GetResourceConsumptionAsync(subscription.Id, rgName);
 
-                    await _repository.SaveRgInfoAsync(rgInfo);
+                        PrintResources(rgInfo);
+
+                        await _repository.SaveRgInfoAsync(rgInfo);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("================================================");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("================================================");
             }
         }
 
